@@ -5,6 +5,7 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import scipy.optimize as optimization
+from math import pi
 
 # Change matplotlib fonts
 plt.rc('font', **{'family': 'serif', 'serif': ['Computer Modern']})
@@ -36,4 +37,17 @@ plt.ylabel('Probability, $p(x)\\propto \\sin^2 x / x^2$')
 plt.savefig('q1.pdf')
 
 # Plotting for question 2
+data = np.loadtxt('q2.out')
+analytic = 2/pi
+dev_flat = abs(data[:,1]-analytic)
+dev_imp = abs(data[:,2]-analytic)
 
+plt.close()
+p1, = plt.plot(dev_flat,label='Flat sampling')
+p2, = plt.plot(dev_imp,label='Importance sampling')
+plt.legend(handles=[p1,p2])
+plt.yscale('log')
+plt.xscale('log')
+plt.xlabel('Samples')
+plt.ylabel('Size of error')
+plt.savefig('q2.pdf')
