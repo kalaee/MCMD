@@ -50,7 +50,7 @@ We find
 NInt(f(x), x: 0 --> 1) = 0.6368
 ```
 
-# 2.c
+## 2.c
 We now use importance sampling with
 ```
 f(x) <= g(x) = 1- x^2, 0 <= x <= 1
