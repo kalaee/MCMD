@@ -24,14 +24,14 @@ double rng_sinc(gsl_rng* r, gsl_rstat_workspace *rstat)
 	{
 		// select x acc. to g(x) = 1 (x < 1) + 1/x^2 (x >= 1)
 		R = 2*gsl_rng_uniform_pos(r);	// in interval (0,1)-->(0,2)
-		x = R < 1 ? R : 1/(2-R);		// invert x = Ginv(R)
+		x = R < 1 ? R : 1/(2-R);	// invert x = Ginv(R)
 		// compare y = R*g(x) and f(x)
 		y = gsl_rng_uniform_pos(r);
 		if ( x > 1 ) y = y/(x*x);
 		fx = gsl_pow_2(sin(x)/x);
 		// collect integral
 		if ( x > 1 ) gsl_rstat_add(fx*x*x,rstat);	// dx = x^2 * dGinv(x)
-		else gsl_rstat_add(fx,rstat);				// dx = dGinv(x)
+		else gsl_rstat_add(fx,rstat);			// dx = dGinv(x)
 	} while (y > fx);
 	return x;
 }
@@ -58,21 +58,21 @@ The analytic integral of `f` is
 Int(f(x), x: 0 --> 1) = 2/pi = 0.637
 ```
 ## 2.b
-We use hit-and-miss with flat sampling
+We use hit-and-miss integration with flat sampling
 ```
-f(x) <= 1
+f(x) <= g(x) = 1
 ```
-See function `mci_cosflat` from `q2.c` for implementation
+See function `hmi_cosflat` from `q2.c` for implementation
 ```C
-void mci_cosflat(gsl_rng* r, gsl_rstat_workspace *rstat)
+double hmi_cosflat(gsl_rng* r)
 {
-	double R, fx;
+	double R, y, fx;
 	// select x in (0,1)
 	R = gsl_rng_uniform_pos(r);	// in interval (0,1)
 	// collect integral
+	y = gsl_rng_uniform_pos(r);
 	fx = cos(0.5*M_PI*R);
-	gsl_rstat_add(fx,rstat);	// dx = dGinv(x)
-	return;
+	return y < fx ? 1 : 0;
 }
 ```
 
@@ -94,18 +94,18 @@ The primitive of `g` is
 G(x) = x - 1/3 x^3
 ```
 with an inverse provided in the exercise. Note that `G(x)` spans `(0,2/3)`.
-Importance sampling is implemented in function `mci_cosimp` from file `q2.c`
+Importance sampling is implemented in function `hmi_cosimp` from file `q2.c`
 ```C
-void mci_cosimp(gsl_rng* r, gsl_rstat_workspace *rstat)
+double hmi_cosimp(gsl_rng* r)
 {
-	double R, x, fx;
-	// select select x acc. to g(x) = 1-x^2
+	double R, x, y, fx;
+	// select select x acc. to g(x)
 	R = gsl_rng_uniform_pos(r);
 	x = 2*cos(acos(-R)/3-2*M_PI/3);
 	// collect integral
+	y = gsl_rng_uniform_pos(r)*(1-x*x);
 	fx = cos(0.5*M_PI*x);
-	gsl_rstat_add(2./3.*fx/(1-x*x),rstat);	// dx = dGinv(x)
-	return;
+	return y < fx ? 2./3. : 0 ; // G(1) = 2/3
 }
 ```
 From importance sampling the numerical integral is
