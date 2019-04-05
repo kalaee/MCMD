@@ -115,5 +115,5 @@ NInt(f(x), x: 0 --> 1) = 0.6364
 The convergence is visible in `q2.pdf` (orange line).
 Due to the fact that importance sampling, by design, should sample more
 in the important areas of the function we would expect this to converge faster.
-However, in this specific case, a faster trend is not visible in the obtained
-estimates.
+From the plot in `q2.pdf` we observe that importance sampling curve
+spends most of the time below that of the flat sampling.
