@@ -81,7 +81,7 @@ sampling of a million points is visible in `q2.pdf` (blue line).
 From the log-log plot we see that the convergence is roughly a power-law.
 We find
 ```
-NInt(f(x), x: 0 --> 1) = 0.6368
+NInt(f(x), x: 0 --> 1) = 0.6364
 ```
 
 ## 2.c
@@ -110,7 +110,7 @@ double hmi_cosimp(gsl_rng* r)
 ```
 From importance sampling the numerical integral is
 ```
-NInt(f(x), x: 0 --> 1) = 0.6364
+NInt(f(x), x: 0 --> 1) = 0.6365
 ```
 The convergence is visible in `q2.pdf` (orange line).
 Due to the fact that importance sampling, by design, should sample more
