@@ -30,7 +30,7 @@ for i in range(len(f)):
 		f[i] = 1e-6
 	f[i] /= dense # compensate for zoom
 
-plt.hist(zoom,200,log=True,normed=True)
+plt.hist(zoom,100,log=True,normed=True)
 plt.plot(t,f,color='tab:orange', label='Function')
 plt.xlabel('$x$')
 plt.ylabel('Probability, $p(x)\\propto \\sin^2 x / x^2$')

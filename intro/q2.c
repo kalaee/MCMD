@@ -4,27 +4,29 @@
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_rstat.h>
 
-void mci_cosflat(gsl_rng* r, gsl_rstat_workspace *rstat)
+// hit and miss integration, flat g(x) = 1, 0 < x < 1
+double hmi_cosflat(gsl_rng* r)
 {
-	double R, fx;
+	double R, y, fx;
 	// select x in (0,1)
 	R = gsl_rng_uniform_pos(r);	// in interval (0,1)
 	// collect integral
+	y = gsl_rng_uniform_pos(r);
 	fx = cos(0.5*M_PI*R);
-	gsl_rstat_add(fx,rstat);	// dx = dGinv(x)
-	return;
+	return y < fx ? 1 : 0;
 }
 
-void mci_cosimp(gsl_rng* r, gsl_rstat_workspace *rstat)
+// importance sampling with g(x) = 1 - x^2
+double hmi_cosimp(gsl_rng* r)
 {
-	double R, x, fx;
-	// select select x acc. to g(x) = 1-x^2
+	double R, x, y, fx;
+	// select select x acc. to g(x)
 	R = gsl_rng_uniform_pos(r);
 	x = 2*cos(acos(-R)/3-2*M_PI/3);
 	// collect integral
+	y = gsl_rng_uniform_pos(r)*(1-x*x);
 	fx = cos(0.5*M_PI*x);
-	gsl_rstat_add(2./3.*fx/(1-x*x),rstat);	// dx = dGinv(x)
-	return;
+	return y < fx ? 2./3. : 0 ; // G(1) = 2/3
 }
 
 int main(void)
@@ -45,8 +47,8 @@ int main(void)
 	FILE *f = fopen("q2.out","w");	// output file
 	for (size_t i = 0; i < tot; i++)
 	{
-		mci_cosflat(r,flat);
-		mci_cosflat(r,imp);
+		gsl_rstat_add(hmi_cosflat(r),flat);
+		gsl_rstat_add(hmi_cosimp(r),imp);
 		fprintf(f,"%zu\t%g\t%g\n",
 			i,gsl_rstat_mean(flat),gsl_rstat_mean(imp));
 	}
