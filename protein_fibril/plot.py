@@ -38,11 +38,15 @@ def q0(proj):
 #q0('B')
 
 # Question 1, heat capacity
-def avg(func,energy,lng,temp,zpart):
+def pdf(energy,lng,t,zpart):
+	return np.exp(lng-energy/t)/zpart
+
+def avg(func,energy,lng,t,zpart):
 	s = 0
+	p = pdf(energy,lng,t,zpart)
 	for i in range(len(energy)):
-		s += func(energy[i])*np.exp(lng[i]-energy[i]/temp)
-	return s / zpart
+		s += func(energy[i])*p[i]
+	return s
 
 def unit(x):
 	return 1
@@ -55,20 +59,25 @@ def second(x):
 
 def cvt(temp,energy,lng):
 	c = []
+	tnew = []
 	for t in temp:
 		zpart = avg(unit,energy,lng,t,1)
+		p = pdf(energy,lng,t,zpart)
+		if p[-1] > 1e-4 or p[-2] > 1e-4:
+			continue
+		tnew.append(t)
 		x1t = avg(first,energy,lng,t,zpart)
 		x2t = avg(second,energy,lng,t,zpart)
 		c.append((x2t-x1t**2)/t**2)
-	return c
+	return tnew, c
 
-def q1(proj):
+def q1(proj,bot,top):
 	name = 'proj'+proj+'/lng_'+str(24)
 	data = np.loadtxt(name)
 	energy = data[:,0]
 	lng = data[:,1]
-	temp = np.linspace(0.5,1,1000)
-	c = cvt(temp,energy,lng)
+	tpre = np.linspace(bot,top,1000)
+	temp, c = cvt(tpre,energy,lng)
 	# find index of largest element
 	cmax = max(c)
 	tmax = temp[c.index(cmax)]
@@ -77,14 +86,39 @@ def q1(proj):
 	plt.plot(temp,c,color='tab:blue')
 	plt.xlabel('Temperature')
 	plt.ylabel('$C_V(T)$')
-	s = '{:0.2f}'.format(tmax)
+	s = '{:0.3f}'.format(tmax)
 	print 'Question 1, proj'+proj+': T_max = '+s
 	plt.savefig('proj'+proj+'_1.pdf')
-	return
+	return tmax
 
-q1('A')
-q1('B')
+maxA = q1('A',0.5,0.8)
+maxB = q1('B',0.5,0.7)
 
 # Question 2, PDF for Tmax
-def pdf(energy,lng,tmax):
+def q2(proj,tmax,width):
+	name = 'proj'+proj+'/lng_'+str(24)
+	data = np.loadtxt(name)
+	energy = data[:,0]
+	lng = data[:,1]
+	zpart = avg(unit,energy,lng,tmax,1)
+	p = pdf(energy,lng,tmax,zpart)
+	enew = []
+	pnew = []
+	for i in range(len(energy)/width):
+		enew.append((energy[i*width]+energy[(i+1)*width-1])/2)
+		ps = 0
+		for j in range(width):
+			ps += p[i*width+j]
+		pnew.append(ps)
+	test = 0
+	for pi in pnew:
+		test += pi
+	plt.close()
+	plt.plot(enew,pnew)
+	plt.xlabel('Energy')
+	plt.ylabel('$P_{T_\mathrm{max}}(E)$')
+	plt.savefig('proj'+proj+'_2.pdf')
+	return
 
+q2('A',maxA,4)
+q2('B',maxB,4)
