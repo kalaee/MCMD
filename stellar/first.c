@@ -13,7 +13,7 @@
 #define G2		2.2
 #define G3		2.7
 #define	RANGE	(M3 - M0)
-#define ITS		1000
+#define ITS		10000
 #define LIMWD	8
 #define LIMNS	30
 //#define WEIGHT(a,b,g)	(pow(a*b,-g)*(a*pow(b,g)-b*pow(a,g))/(g-1))
