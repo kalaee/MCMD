@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <math.h>
 #include <gsl/gsl_rng.h>
-#include <gsl/gsl_rstat.h>
 #include "/nfs/users2/kalaee/Documents/core/core_rstat.h"
 
 #define REPS	1000000
