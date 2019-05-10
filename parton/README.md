@@ -45,6 +45,7 @@ void veto(double ea, double pmax, double (*pabc)(double z), gsl_rng* r, double *
 The shower is handled by calling the veto algorithm recursively and counting
 the number of `q->qg` events as well as the number of added gluons.
 Sampling 1000000 we obtain
+
 |`E_0`		| `avg(q->qg)`	| `sd(q->qg)`	| `avg(#g)`	| `sd(#g)`|
 |-----------|---------------|---------------|-----------|---------|
 |;50|2.03764|0.928995|4.8761|4.1521|
