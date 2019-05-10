@@ -29,16 +29,17 @@ void veto(double ea, double pmax, double (*pabc)(double z), gsl_rng* r, double *
 {
 	double term, z, y, ft, p, p2;
 
-	// determine time
 	y = 1;
 	ft = 0;
 	p2 = pmax*pmax;
 	do {
+		// determine time
 		term = GINT(p2,pabc)-log(gsl_rng_uniform_pos(r));
 		p2 = GINV(term,pabc);
 		p = sqrt(p2);
 		if (2*p < ea)
 		{
+			// determine space
 			z = p/ea + gsl_rng_uniform_pos(r)*(1.-2.*p/ea);
 			y = gsl_rng_uniform_pos(r)*GF(p2,pabc);
 			ft = 0.5*M_1_PI*ALPHA/p2*pabc(z);
