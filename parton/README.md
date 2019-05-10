@@ -1,7 +1,7 @@
 # Parton Showers
 We consider the Parton shower with the processes
 `q->qg` and `g->gg`.
-These have the rate pabctions
+These have the rate functions
 ```
 fabc(p,z) = alpha_s / (2*pi) Pabc(z) / p^2
 ```
