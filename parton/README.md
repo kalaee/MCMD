@@ -51,6 +51,31 @@ void veto(double ea, double pmax, double (*pabc)(double z), gsl_rng* r, double *
 The shower is handled by calling the veto algorithm recursively for the
 two daughter particles with new energies and new `pmax=p`,
 and counting the number of `q->qg` events as well as the number of added gluons.
+This is implemented in the file `parton.c` as the functions `runq` for the
+quark and `rung` for the gluon.
+```C
+void runq(double ea, double pmax, size_t *s, gsl_rng *r)
+{
+	if (ea <= 1 || pmax <= 1) return;
+
+	// do veto and find outcome
+	double p, z, eb, ec;
+	veto(ea,pmax,&q2qg,r,&p,&z);
+	eb = ea*z;
+	ec = ea-eb;
+
+	s[0]++; // q->qg event
+	s[1]++; // gluon created
+
+	// recursion
+	runq(eb,p,s,r);
+	rung(ec,p,s,r);
+
+	return;
+}
+```
+with similar procedure for the gluon.
+
 Sampling 100 thousand times we obtain
 
 |`E_0`		| `avg(q->qg)`	| `sd(q->qg)`	| `avg(#g)`	| `sd(#g)`|
