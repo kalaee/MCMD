@@ -3,11 +3,8 @@
 #include <gsl/gsl_rng.h>
 #include "/nfs/users2/kalaee/Documents/core/core_rstat.h"
 
-#define REPS	1000000
+#define REPS	100000
 #define ALPHA	0.2
-#define GF(t,func)		(0.5*M_1_PI*ALPHA*func(1-1/ea)/(t))
-#define GINT(t,func)	(0.5*M_1_PI*ALPHA*func(1-1/ea)*log((pmax*pmax)/(t)))
-#define GINV(g,func)	((pmax*pmax)*exp(-2*M_PI*(g)/(ALPHA*func(1-1/ea))))
 
 // http://home.thep.lu.se/~leif/MCMD/lec3.pdf
 
@@ -26,23 +23,23 @@ double g2gg(double z)
 
 void veto(double ea, double pmax, double (*pabc)(double z), gsl_rng* r, double *pout, double *zout)
 {
-	double term, z, y, ft, p, p2;
+	double term, z, y, g, ft, p, p2;
 
 	y = 1;
 	ft = 0;
-	p2 = pmax*pmax;
+	double cand = 0.25*ea*ea;
+	p2 = pmax*pmax < cand ? pmax*pmax : cand;
 	do {
 		// determine time
-		term = GINT(p2,pabc)-log(gsl_rng_uniform_pos(r));
-		p2 = GINV(term,pabc);
+		term = 0.5*M_1_PI*ALPHA*pabc(1-1/ea)*log((pmax*pmax)/p2);
+		term = term - log(gsl_rng_uniform_pos(r));
+		p2 = pmax*pmax*exp(-2*M_PI*term/(ALPHA*pabc(1-1/ea)));
 		p = sqrt(p2);
-		if (2*p < ea)
-		{
-			// determine space
-			z = p/ea + gsl_rng_uniform_pos(r)*(1.-2.*p/ea);
-			y = gsl_rng_uniform_pos(r)*GF(p2,pabc);
-			ft = 0.5*M_1_PI*ALPHA/p2*pabc(z);
-		}
+		// determine space
+		z = p/ea + gsl_rng_uniform_pos(r)*(1.-2.*p/ea);
+		g = 0.5*M_1_PI*ALPHA*pabc(1-1/ea)/(p2*(1-2*p/ea));
+		y = gsl_rng_uniform_pos(r)*g;
+		ft = 0.5*M_1_PI*ALPHA/p2*pabc(z);
 	} while (y > ft);
 	*pout = p;
 	*zout = z;
