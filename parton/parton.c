@@ -27,19 +27,21 @@ void veto(double ea, double pmax, double (*pabc)(double z), gsl_rng* r, double *
 
 	y = 1;
 	ft = 0;
-	double cand = 0.25*ea*ea;
-	p2 = pmax*pmax < cand ? pmax*pmax : cand;
+	p2 = pmax*pmax;
 	do {
 		// determine time
 		term = 0.5*M_1_PI*ALPHA*pabc(1-1/ea)*log((pmax*pmax)/p2);
 		term = term - log(gsl_rng_uniform_pos(r));
 		p2 = pmax*pmax*exp(-2*M_PI*term/(ALPHA*pabc(1-1/ea)));
 		p = sqrt(p2);
-		// determine space
-		z = p/ea + gsl_rng_uniform_pos(r)*(1.-2.*p/ea);
-		g = 0.5*M_1_PI*ALPHA*pabc(1-1/ea)/(p2*(1-2*p/ea));
-		y = gsl_rng_uniform_pos(r)*g;
-		ft = 0.5*M_1_PI*ALPHA/p2*pabc(z);
+		if ( 2*p < ea )
+		{
+			// determine space
+			z = p/ea + gsl_rng_uniform_pos(r)*(1.-2.*p/ea);
+			g = 0.5*M_1_PI*ALPHA*pabc(1-1/ea)/(p2*(1-2*p/ea));
+			y = gsl_rng_uniform_pos(r)*g;
+			ft = 0.5*M_1_PI*ALPHA/p2*pabc(z);
+		}
 	} while (y > ft);
 	*pout = p;
 	*zout = z;
