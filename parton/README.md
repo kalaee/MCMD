@@ -14,8 +14,11 @@ and use veto sampling with
 ```
 gabc(p,z) = alpha_s / (2*pi) Pabc(1-1/E_a) / p^2 / (1-2 p/E_a)
 ```
+Integrated over the `z`-coordinate from `p/E_a` to `1-p/E_a` we have
+```
+gabc(p) = alpha_s / (2*pi) Pabc(1-1/E_a) / p^2
+```
 The veto algorithm is implemented in the file `parton.c` as
-
 ```C
 void veto(double ea, double pmax, double (*pabc)(double z), gsl_rng* r, double *pout, double *zout)
 {
@@ -45,10 +48,9 @@ void veto(double ea, double pmax, double (*pabc)(double z), gsl_rng* r, double *
 	return;
 }
 ```
-
 The shower is handled by calling the veto algorithm recursively for the
-two daughter particles and counting the number of `q->qg` events as well as
-the number of added gluons.
+two daughter particles with new energies and new `pmax=p`,
+and counting the number of `q->qg` events as well as the number of added gluons.
 Sampling 100 thousand times we obtain
 
 |`E_0`		| `avg(q->qg)`	| `sd(q->qg)`	| `avg(#g)`	| `sd(#g)`|
