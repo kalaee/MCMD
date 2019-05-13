@@ -27,9 +27,9 @@ void veto(double ea, double pmax, double (*pabc)(double z), gsl_rng* r, double *
 	y = 1;
 	ft = 0;
 	p2 = pmax*pmax;
+	term = 0;
 	do {
 		// determine time
-		term = 0.5*M_1_PI*ALPHA*pabc(1-1/ea)*log((pmax*pmax)/p2);
 		term = term - log(gsl_rng_uniform_pos(r));
 		p2 = pmax*pmax*exp(-2*M_PI*term/(ALPHA*pabc(1-1/ea)));
 		p = sqrt(p2);
