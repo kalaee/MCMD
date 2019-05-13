@@ -1,11 +1,15 @@
 # Parton Showers
+
+*I have doubts about the obtained event numbers and thus have either a bug in the code or a misunderstanding in my interpretation of how the veto algorithm works.*
+
 We consider the Parton shower with the processes
 `q->qg` and `g->gg`.
-These have the rate functions
+These have the rate function
 ```
 fabc(p,z) = alpha_s / (2*pi) Pabc(z) / p^2
 ```
 for `p < E_a / 2` and zero otherwise.
+
 The spatial distributions Pabc(z) are
 `Pqqg(z) = 4/3*(1+z^2)/(1-z)` and `Pggg(z)=3(1-z(1-z))^2/(z*(1-z))`.
 
@@ -84,3 +88,7 @@ Sampling 100 thousand times we obtain
 |100|2.16755|0.987991|5.038|4.02471|
 |200|2.6073|1.15288|7.93786|6.1498|
 |400|3.10205|1.30999|12.7074|9.43829|
+
+The above numbers seem low. But at least the means increase with increasing energy.
+I had expected a Poissonian process and hence Poissonian SDs, which I have not obtained.
+As I cannot recognise any bugs in the code, I must have misinterpreted some step in the algorithm.
