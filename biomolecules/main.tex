@@ -1,0 +1,58 @@
+\documentclass{article}
+
+\usepackage{amsmath}
+\usepackage{graphicx}
+
+\begin{document}
+\title{MCMD P5 -- Simulation of biomolecules}
+\author{Alex Arash Sand Kalaee\\ \texttt{kalaee@teorfys.lu.se}}
+\maketitle
+
+\textbf{An introduction to molecular dynamics simulations with AMBER}
+
+This introduction tutorial focused on getting familiar with AMBER.
+The SUMMARY files depicted a system heated to 300 K and remained stable while the total energy increased in tandem with the temperature. Also, we studied the RMSD with CPPTRAJ to how it changed over time.
+
+\textbf{Using VMD with AMBER}
+
+Another introduction about simulations. We learned how to visualise a molecule and make a movie.
+
+\textbf{Loop dynamics of the HIV-1 integrase core domain}
+
+Actual simulations. Via the input file the molecule was added to
+a water bath and ions added. We minimized the energy and
+equilibrated the system through heating. By looking at the RMSD
+of the trajectory we tracked the system backwards to determine when
+the system was sufficiently equilibrated.
+
+\textbf{A case study in folding Trp-Cage}
+
+We follow the steps in an article to study how the 
+Trp-Cage folds. The final folding of the protein yielded a
+higher energy state the one obtained in the article. Possibly due to shorter simulation time.
+
+\textbf{Thermodynamic Integration using soft core potentials}
+
+Calculation of the free energy difference between two systems.
+We find $\Delta G =1.83$.
+
+\textbf{Computing binding enthalpy values}
+
+$\Delta H = H_\mathrm{complex} + H_\mathrm{water} + H_\mathrm{host}+H_\mathrm{guest} = -21.4 $.
+
+\textbf{An introduction to CPPTRAJ}
+
+Learned how to load a topology and trajectory, and how to do the
+actions on the loaded system.
+
+\textbf{RMSD Analysis in CPPTRAJ}
+
+RMSD to references with the same type of topology and RMSD with different topology were presented.
+
+\textbf{Hydrogen Bond Analysis with CPPTRAJ}
+
+We find that RMSD change and changes in the number of solute-solute and solute-solvent bonds are negatively correlated.
+
+
+Finally, I did \textbf{Protonating a protein with MAESTRO}.
+\end{document}

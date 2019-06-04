@@ -1,9 +1,8 @@
 #include <stdio.h>
 #include <math.h>
 #include <gsl/gsl_rng.h>
-//#include <gsl/gsl_rstat.h>
+#include <gsl/gsl_math.h>
 #include <omp.h>
-
 
 #define M0		0.08
 #define M1		0.5
@@ -14,17 +13,15 @@
 #define G3		2.7
 #define	RANGE	(M3 - M0)
 #define ITS		10000
-#define LIMWD	8
-#define LIMNS	30
 #define SZCL	1000000
-#define STEPS	15
+#define STEPS	1
 
 //#define WEIGHT(a,b,g)	(pow(a*b,-g)*(a*pow(b,g)-b*pow(a,g))/(g-1))
 
 double func(double mass)
 {
 	if (mass < M1)
-		return pow(mass,-G1);
+		return pow(0.5,-G2)/pow(0.5,-G1)*pow(mass,-G1);
 	else if (mass < M2)
 		return pow(mass,-G2);
 	else
@@ -37,29 +34,31 @@ double mass(gsl_rng *r)
 	do
 	{
 		Ix = 17.2601*gsl_rng_uniform_pos(r);
-		pos = 0.859044/pow((17.2628-Ix),5./6.);
+		pos = 0.859044*pow((17.2628-Ix),-5./6.);
 		fx = func(pos);
-		y = gsl_rng_uniform_pos(r)*pow(pos,-G2);
+		y = pow(pos,-G2);
+		if ( fx > y ) printf("ERROR!\n");
+		y *= gsl_rng_uniform_pos(r);
 	} while (y > fx);
 	return pos;
 }
 
-void double_print(double arr[ITS][STEPS+1], FILE *f)
+void double_print(double *arr, FILE *f)
 {
-	for (int i = 0; i < ITS; i++)
+	for (size_t i = 0; i < ITS; i++)
 	{
-		for (int t = 0; t < STEPS+1; t++)
-			fprintf(f,"%g\t",arr[i][t]);
+		for (size_t t = 0; t < STEPS+1; t++)
+			fprintf(f,"%g\t",arr[i*(STEPS+1)+t]);
 		fprintf(f,"\n");
 	}
 	return;
 }
-void int_print(size_t arr[ITS][STEPS+1], FILE *f)
+void int_print(size_t *arr, FILE *f)
 {
-	for (int i = 0; i < ITS; i++)
+	for (size_t i = 0; i < ITS; i++)
 	{
-		for (int t = 0; t < STEPS+1; t++)
-			fprintf(f,"%zu\t",arr[i][t]);
+		for (size_t t = 0; t < STEPS+1; t++)
+			fprintf(f,"%zu\t",arr[i*(STEPS+1)+t]);
 		fprintf(f,"\n");
 	}
 	return;
@@ -67,15 +66,16 @@ void int_print(size_t arr[ITS][STEPS+1], FILE *f)
 
 int main(void)
 {
-	int steps = STEPS+1;
-	double sm[ITS][steps];	// stellar mass
-	double lm[ITS][steps];	// mass/luminosity ratio
-	size_t ms[ITS][steps];	// main sequence
-	size_t wd[ITS][steps];	// white dwarfs
-	size_t ns[ITS][steps];	// neutron star
-	size_t bh[ITS][steps];	// black hole
+	size_t steps = STEPS+1;
+	double *sm = malloc(sizeof(double)*ITS*steps);
+	double *cm = malloc(sizeof(double)*ITS*steps);
+	double *lm = malloc(sizeof(double)*ITS*steps);
+	size_t *ms = malloc(sizeof(size_t)*ITS*steps);
+	size_t *wd = malloc(sizeof(size_t)*ITS*steps);
+	size_t *ns = malloc(sizeof(size_t)*ITS*steps);
+	size_t *bh = malloc(sizeof(size_t)*ITS*steps);
 
-	#pragma omp parallel for schedule(dynamic) num_threads(22)
+	#pragma omp parallel for schedule(dynamic) num_threads(16)
 	for (int i = 0 ; i < ITS; i++)
 	{
 		// PREPARE RNG
@@ -92,47 +92,51 @@ int main(void)
 		for (size_t j = 0; j < SZCL; j++)
 		{
 			cluster[j] = mass(r);
-			tau[j] = 10*pow(cluster[j],-2.5);
+			tau[j] = 1.0e10*pow(cluster[j],-2.5);
 		}	
 
 		// run time
 		for (int t = 0; t < steps; t++)
 		{
-			sm[i][t] = 0;
-			ms[i][t] = 0;
-			wd[i][t] = 0;
-			ns[i][t] = 0;
-			bh[i][t] = 0;
-			lm[i][t] = 0;
+			size_t pos = i*steps+t;
+			sm[pos] = 0;
+			cm[pos] = 0;
+			ms[pos] = 0;
+			wd[pos] = 0;
+			ns[pos] = 0;
+			bh[pos] = 0;
+			lm[pos] = 0;
 			double lum = 0;
+			double time = 10000*pow(1200000,((double) t) / STEPS);
 			for (size_t s = 0; s < SZCL; s++)
 			{
-				if (t < tau[s])
+				if (time < tau[s])
 				{
-					ms[i][t]++;
-					sm[i][t] += cluster[s];
-					lum += tau[s]*cluster[s];
+					ms[pos]++;
+					sm[pos] += cluster[s];
+					cm[pos] += cluster[s];
+					lum += cluster[s]/tau[s];
 				}
 				else
 				{
-					if (cluster[s] < LIMWD) // white dwarf
+					if (cluster[s] < 8) // white dwarf
 					{
-						wd[i][t]++;
-						sm[i][t] += 0.6;
+						wd[pos]++;
+						cm[pos] += 0.6;
 					}
-					else if (cluster[s] < LIMNS) // neutron star
+					else if (cluster[s] < 30) // neutron star
 					{
-						ns[i][t]++;
-						sm[i][t] += 1.4;
+						ns[pos]++;
+						cm[pos] += 1.4;
 					}
 					else // black hole
 					{
-						bh[i][t]++;
-						sm[i][t] += 10.;
+						bh[pos]++;
+						cm[pos] += 10.;
 					}
 				}
 			}
-			lm[i][t] = lum / sm[i][t];
+			lm[pos] = 1e-10*cm[pos] / lum;
 		}
 
 		// free memory
@@ -142,26 +146,43 @@ int main(void)
 		printf("DONE WITH %d\n",i);
 	}
 
+	printf("PRINTING!\n");
+
 	// print
 	FILE *f;
-	f = fopen("ms.log","w");
+	f = fopen("time12,log","w");
+	for (int t = 0; t < steps; t++)
+		fprintf(f,"%g\n",10000*pow(1500000,((double) t) / STEPS));
+	fclose(f);
+	f = fopen("ms12,log","w");
 	int_print(ms,f);
 	fclose(f);
-	f = fopen("wd.log","w");
+	f = fopen("wd12,log","w");
 	int_print(wd,f);
 	fclose(f);
-	f = fopen("ns.log","w");
+	f = fopen("ns12,log","w");
 	int_print(ns,f);
 	fclose(f);
-	f = fopen("bh.log","w");
+	f = fopen("bh12,log","w");
 	int_print(bh,f);
 	fclose(f);
-	f = fopen("sm.log","w");
+	f = fopen("sm12,log","w");
 	double_print(sm,f);
 	fclose(f);
-	f = fopen("lm.log","w");
+	f = fopen("cm12,log","w");
+	double_print(cm,f);
+	fclose(f);
+	f = fopen("lm12,log","w");
 	double_print(lm,f);
 	fclose(f);
+
+	free(ms);
+	free(bh);
+	free(wd);
+	free(lm);
+	free(sm);
+	free(cm);
+	free(ns);
 
 	return 0;
 }
